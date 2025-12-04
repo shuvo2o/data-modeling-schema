@@ -31,6 +31,20 @@ async function run() {
         const db = client.db("data-modeling-schema");
         const usersCollection = db.collection("users");
 
+        app.post("/add-user", async (req, res) => {
+            try {
+                const user = req.body;
+                const result = await usersCollection.insertOne(user);
+                res.json({
+                    message: "User added successfully",
+                    user
+                });
+            } catch (error) {
+                res.status(500).send({ message: "Failed to add user", error: error.message });
+            }
+
+        })
+
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
