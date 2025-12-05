@@ -19,7 +19,7 @@ const uri = process.env.MONGODB_URL;
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
-        strict: true,
+        // strict: true,
         deprecationErrors: true,
     }
 });
@@ -30,9 +30,21 @@ async function run() {
         // create db and collection
         const db = client.db("data-modeling-schema");
         const usersCollection = db.collection("users");
+        const productsCollection = db.collection("products");
 
         // basic indexing
-        usersCollection.createIndex({ email:1})
+        usersCollection.createIndex({ name:1, email:1}, {unique:true}) 
+        productsCollection.createIndex({ description:"text"}) 
+        
+        // add product
+        productsCollection.insertOne({
+            name: "Product 1",
+            category: "Cat1",
+            price:200,
+            description:"This is product 1",
+            tags:["smart", "electronics", "mobile"]
+        })
+
         app.post("/add-user", async (req, res) => {
             try {
                 const user = req.body;
@@ -49,8 +61,8 @@ async function run() {
 
         // get users with index
         app.get("/users", async (req, res)=>{
-            const {email} = req.query;
-            const users = await usersCollection.find({email:email}).toArray();
+            const {email,name} = req.query;
+            const users = await usersCollection.find({name:name, email:email}).toArray();
             res.send(users);
         })
 
