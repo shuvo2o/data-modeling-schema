@@ -31,6 +31,8 @@ async function run() {
         const db = client.db("data-modeling-schema");
         const usersCollection = db.collection("users");
 
+        // basic indexing
+        usersCollection.createIndex({ email:1})
         app.post("/add-user", async (req, res) => {
             try {
                 const user = req.body;
@@ -43,6 +45,13 @@ async function run() {
                 res.status(500).send({ message: "Failed to add user", error: error.message });
             }
 
+        })
+
+        // get users with index
+        app.get("/users", async (req, res)=>{
+            const {email} = req.query;
+            const users = await usersCollection.find({email:email}).toArray();
+            res.send(users);
         })
 
         await client.db("admin").command({ ping: 1 });
