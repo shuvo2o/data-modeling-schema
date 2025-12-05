@@ -19,7 +19,7 @@ const uri = process.env.MONGODB_URL;
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
-        // strict: true,
+        strict: true,
         deprecationErrors: true,
     }
 });
@@ -34,7 +34,7 @@ async function run() {
 
         // basic indexing
         usersCollection.createIndex({ name:1, email:1}, {unique:true}) 
-        productsCollection.createIndex({ description:"text"}) 
+        // productsCollection.createIndex({ description:"text"}) 
         
         // add product
         productsCollection.insertOne({
