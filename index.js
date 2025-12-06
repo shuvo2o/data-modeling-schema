@@ -63,7 +63,7 @@ async function run() {
         // get users with index
         app.get("/users", async (req, res)=>{
             const {email,name} = req.query;
-            const users = await usersCollection.find().sort({createdAt: -1}).toArray();
+            const users = await usersCollection.find().sort({createdAt: 1}).toArray();
             res.send(users);
         })
 
