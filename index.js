@@ -34,6 +34,7 @@ async function run() {
 
         // basic indexing
         usersCollection.createIndex({ name:1, email:1}, {unique:true}) 
+        usersCollection.createIndex({ createdAt:-1})
         // productsCollection.createIndex({ description:"text"}) 
         
         // add product
@@ -62,7 +63,7 @@ async function run() {
         // get users with index
         app.get("/users", async (req, res)=>{
             const {email,name} = req.query;
-            const users = await usersCollection.find({name:name, email:email}).toArray();
+            const users = await usersCollection.find().sort({createdAt: -1}).toArray();
             res.send(users);
         })
 
