@@ -43,7 +43,7 @@ async function run() {
             category: "Cat1",
             price:200,
             description:"This is product 1",
-            tags:["smart", "electronics", "mobile"]
+            tags:["smartphone", "electronics", "mobile"]
         })
 
         app.post("/add-user", async (req, res) => {
