@@ -7,7 +7,7 @@ require('dotenv').config();
 const port = process.env.PORT || 3000
 
 // middleware
-app.use(express.json())
+app.use(express.json());
 app.use(cors());
 
 
@@ -31,34 +31,44 @@ async function run() {
         // create db and collection
         const db = client.db("data-modeling-schema");
         const studentSchema = {
-
             validator: {
                 $jsonSchema: {
                     bsonType: "object",
-                    title: "Student Object Validation",
-                    required: ["address", "major", "name", "year"],
+                    required: ["email", "address", "major", "name", "year"],
                     properties: {
-                        name: {
+                        name: { bsonType: "string" },
+                        email: {
                             bsonType: "string",
-                            description: "'name' must be a string and is required"
+                            pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
                         },
                         year: {
-                            bsonType: "int",
+                            bsonType: ["int", "double"],
                             minimum: 2017,
-                            maximum: 3017,
-                            description: "'year' must be an integer in [ 2017, 3017 ] and is required"
+                            maximum: 3017
                         },
                         gpa: {
-                            bsonType: ["double"],
-                            description: "'gpa' must be a double if the field exists"
+                            bsonType: ["double", "int"]
+                        },
+                        major: { bsonType: "string" },
+                        address: {
+                            bsonType: "object",
+                            required: ["city", "street"],
+                            properties: {
+                                city: { bsonType: "string" },
+                                street: { bsonType: "string" }
+                            }
                         }
                     }
                 }
-            }
+            },
+            validationAction: "error"
+        };
 
-        }
+
         // data validation schema
         await db.createCollection("students", studentSchema)
+        // db collections
+        const studentsCollection = db.collection("students");
         const usersCollection = db.collection("users");
         const productsCollection = db.collection("products");
 
@@ -66,6 +76,23 @@ async function run() {
         usersCollection.createIndex({ name: 1, email: 1 }, { unique: true })
         usersCollection.createIndex({ createdAt: -1 })
         // productsCollection.createIndex({ description:"text"}) 
+
+        // student add
+        app.post("/create-student", async (req, res) => {
+            try {
+                const newStudent = {
+                    ...req.body,
+                    createdAt: new Date()
+                }
+                const result = await studentsCollection.insertOne(newStudent);
+                res.status(201).json({
+                    message: "Student created succesfully",
+                    result
+                })
+            } catch (error) {
+                res.status(400).send({ message: "Failed to create student", error: error.message });
+            }
+        })
 
         // add product
         productsCollection.insertOne({
