@@ -27,23 +27,53 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         await client.connect();
+
         // create db and collection
         const db = client.db("data-modeling-schema");
+        const studentSchema = {
+
+            validator: {
+                $jsonSchema: {
+                    bsonType: "object",
+                    title: "Student Object Validation",
+                    required: ["address", "major", "name", "year"],
+                    properties: {
+                        name: {
+                            bsonType: "string",
+                            description: "'name' must be a string and is required"
+                        },
+                        year: {
+                            bsonType: "int",
+                            minimum: 2017,
+                            maximum: 3017,
+                            description: "'year' must be an integer in [ 2017, 3017 ] and is required"
+                        },
+                        gpa: {
+                            bsonType: ["double"],
+                            description: "'gpa' must be a double if the field exists"
+                        }
+                    }
+                }
+            }
+
+        }
+        // data validation schema
+        await db.createCollection("students", studentSchema)
         const usersCollection = db.collection("users");
         const productsCollection = db.collection("products");
 
         // basic indexing
-        usersCollection.createIndex({ name:1, email:1}, {unique:true}) 
-        usersCollection.createIndex({ createdAt:-1})
+        usersCollection.createIndex({ name: 1, email: 1 }, { unique: true })
+        usersCollection.createIndex({ createdAt: -1 })
         // productsCollection.createIndex({ description:"text"}) 
-        
+
         // add product
         productsCollection.insertOne({
             name: "Product 1",
             category: "Cat1",
-            price:200,
-            description:"This is product 1",
-            tags:["smartphone", "electronics", "mobile"]
+            price: 200,
+            description: "This is product 1",
+            tags: ["smartphone", "electronics", "mobile"]
         })
 
         app.post("/add-user", async (req, res) => {
@@ -61,9 +91,9 @@ async function run() {
         })
 
         // get users with index
-        app.get("/users", async (req, res)=>{
-            const {email,name} = req.query;
-            const users = await usersCollection.find().sort({createdAt: 1}).toArray();
+        app.get("/users", async (req, res) => {
+            const { email, name } = req.query;
+            const users = await usersCollection.find().sort({ createdAt: 1 }).toArray();
             res.send(users);
         })
 
