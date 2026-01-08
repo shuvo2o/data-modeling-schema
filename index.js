@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cors());
 
 
-// connect to mongodb
+// connect to mongodb server
 const uri = process.env.MONGODB_URL;
 
 
